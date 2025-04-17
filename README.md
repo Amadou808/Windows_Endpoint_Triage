@@ -10,10 +10,8 @@
 
 *Command*
 `powershell <Script>`
-      OR 
-`iex ((New-Object System.Net.WebClient).DownloadString('https://github.com/Amadou808/Windows_Endpoint_Triage/blob/main/Endpoint_triage.ps1'))`
-      OR
-`iex ((iwr 'https://github.com/Amadou808/Windows_Endpoint_Triage/blob/main/Endpoint_triage.ps1' -UseBasicParsing).Content)`
+
+`iex ((iwr 'https://raw.githubusercontent.com/Amadou808/Windows_Endpoint_Triage/refs/heads/main/Endpoint_triage.ps1' -UseBasicParsing).Content)`
 
 #### **Analysis**
 The script generates several CSV files for further analysis. Among them, the **Hayabusa** output is the most useful for quickly identifying relevant security events.
