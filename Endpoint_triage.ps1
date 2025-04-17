@@ -135,12 +135,12 @@ function Invoke-Triage {
     # Get the current directory where the function is being executed.
     $current_dir = (Get-Location).Path
 
-    Write-Host -ForegroundColor Green "Downloading the Velociraptor offline collector"
+    #Write-Host -ForegroundColor Green "Downloading the Velociraptor offline collector"
     # Download the Velociraptor binary to the current directory.
     
     Invoke-WebRequest -OutFile "$current_dir\Velo-Custom-Windows-Collector.exe" -Uri $url
 
-    Write-Host -ForegroundColor Green "Running the Velociraptor offline collector"
+    #Write-Host -ForegroundColor Green "Running the Velociraptor offline collector"
     # Run the Velociraptor binary with administrator privileges in a hidden window and wait for it to complete.
 
     Start-Process -FilePath "$current_dir\Velo-Custom-Windows-Collector.exe" -Verb runas -WindowStyle Hidden -Wait
@@ -150,19 +150,19 @@ function Invoke-Triage {
     # Extract the archive containing the collected results a new directory.
 
     try {
-        Write-Host -ForegroundColor Green "Expanding the Archive collected results"
+        #Write-Host -ForegroundColor Green "Expanding the Archive collected results"
 
         Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"
 
         Start-Sleep -Seconds 1
 
-        Write-Host -ForegroundColor Green "Copying the Files to => $Output"
+        #Write-Host -ForegroundColor Green "Copying the Files to => $Output"
 
         Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output
 
         Start-Sleep -Seconds 3
 
-        Write-Host -ForegroundColor Green "Deleting Un-Used files"
+        #Write-Host -ForegroundColor Green "Deleting Un-Used files"
 
         Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe"
     }
