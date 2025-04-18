@@ -10,7 +10,9 @@
 
 *Command*
 `powershell <Script>`
-OR
+
+    OR
+
 `iex ((iwr 'https://raw.githubusercontent.com/Amadou808/Windows_Endpoint_Triage/refs/heads/main/Endpoint_triage.ps1' -UseBasicParsing).Content)`
 
 #### **Analysis**
@@ -24,7 +26,7 @@ These rules analyze logs from `C:\Windows\System32\winevt\Logs` and produce CSV 
 #### **Tools**
 [Timeline Explorer](https://www.sans.org/tools/timeline-explorer/): Recommended for analyzing CSV log files efficiently.
 
-##### **Items collected**
+#### **Items collected**
 
   1. **File System Change History (USN Journal)**: Tracks changes to files and directories on NTFS volumes.
   2. **User Folder Interaction History (Shellbags)**: Records user interactions with folders, useful for tracking user activity.
@@ -42,7 +44,7 @@ These rules analyze logs from `C:\Windows\System32\winevt\Logs` and produce CSV 
   14. **Startup Items**: Applications set to Registry Run Keys  & StartUP Folder Directories
   15. **Permanent WMI Events**: WMI-based persistence mechanisms.
 
-##### **Additional Data**:
+#### **Additional Data**:
   - **PowerShell History**: Commands executed in PowerShell.
   - **BITS Jobs**: Background Intelligent Transfer Service jobs, often used for downloading files.
   - **Scheduled Tasks**: Tasks scheduled to run on the system.
