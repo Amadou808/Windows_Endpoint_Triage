@@ -35,6 +35,7 @@ function Set-Log_folder {
         Write-Error -Message $_.Exception.Message
     }
 }
+
 function Get-device_artifacts {
 
     <#
@@ -97,77 +98,52 @@ function Get-device_artifacts {
     }
 
 }
+
 function Invoke-Triage {
     param(
         [Parameter(Mandatory=$False)] 
         [string]$Output = $log_output_path # Default value for $Output is set by the path variable.
     )
 
-    <#
-        .SYNOPSIS
-            This function downloads a Velociraptor offline collector that leverages the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa" and other windows artifacts (e.g, Usn, ShellBags, Prefetch, JumpLists)
-
-        .DESCRIPTION
-            This Velociraptor offline collector runs the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa"
-
-            This "Collector" runs on an endpoint against the default Windows-event log directory and returns a single CSV file for further analysis with excel, timeline explorer, etc.
-
-            Hayabusa currently has over 4000 Sigma rules and over 170 Hayabusa built-in detection rules.
-
-        .PARAMETER Output
-            Specifies the path of the output directory
-
-        .EXAMPLE
-            Invoke-Triage -Output "C:\Windows\Temp"
-
-        .EXAMPLE
-            Invoke-Triage
-
-        .LINK
-            - https://github.com/Yamato-Security/hayabusa
-            - https://docs.velociraptor.app/exchange/artifacts/pages/windows.eventlogs.hayabusa/
-    #>
-
     # The Url hosting the velociraptor offline collector
-
     $url = "https://drive.usercontent.google.com/download?id=1Bz-YCuoOycqpJut9OUZMDSlcUQTF9DjY&export=download&confirm"
 
     # Get the current directory where the function is being executed.
     $current_dir = (Get-Location).Path
 
-    #Write-Host -ForegroundColor Green "Downloading the Velociraptor offline collector"
     # Download the Velociraptor binary to the current directory.
-    
-    Invoke-WebRequest -OutFile "$current_dir\Velo-Custom-Windows-Collector.exe" -Uri $url
-
-    #Write-Host -ForegroundColor Green "Running the Velociraptor offline collector"
-    # Run the Velociraptor binary with administrator privileges in a hidden window and wait for it to complete.
-
-    Start-Process -FilePath "$current_dir\Velo-Custom-Windows-Collector.exe" -Verb runas -WindowStyle Hidden -Wait
-  
-    Start-Sleep -Seconds 1
-
-    # Extract the archive containing the collected results a new directory.
-
     try {
-        #Write-Host -ForegroundColor Green "Expanding the Archive collected results"
-        Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"
-
-        Start-Sleep -Seconds 1
-
-        #Write-Host -ForegroundColor Green "Copying the Files to => $Output"
-        Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output
-
-        Start-Sleep -Seconds 1
-
-        #Write-Host -ForegroundColor Green "Deleting Un-Used files"
-        Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe"
+        Invoke-WebRequest -OutFile "$current_dir\Velo-Custom-Windows-Collector.exe" -Uri $url -ErrorAction Stop
     }
     catch {
-        Write-Error -Message $_.Exception.Message  
+        Write-Error -Message $_.Exception.Message
+        exit 1
     }
- 
+
+    # Run the Velociraptor binary with administrator privileges in a hidden window and wait for it to complete.
+    Start-Process -FilePath "$current_dir\Velo-Custom-Windows-Collector.exe" -Verb runas -WindowStyle Hidden -Wait
+
+    # Extract the archive containing the collected results a new directory.
+    try {
+        Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection" -ErrorAction Stop
+
+        Start-Sleep -Seconds 1
+
+        Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" |
+            Where-Object {$_.Length -gt 1} |
+            Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } |
+            Move-Item -Destination $Output -Force
+
+        Start-Sleep -Seconds 1
+
+        Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe" -ErrorAction Stop
+    }
+    catch {
+        Write-Error -Message $_.Exception.Message
+        exit 1
+    }
 }
+
 function Get-WinAuthLogs {
     param(
         [Parameter(Mandatory=$False)] # This makes the parameter $d optional, because a default value or '30' is used
@@ -238,7 +214,8 @@ function Get-WinAuthLogs {
     }
 
         
-}   
+} 
+
 function Get-Network_auth_logs {
     param(
         [Parameter(Mandatory=$False)] # This makes the parameter $d optional, because a default value or '30' is used
@@ -306,6 +283,7 @@ function Get-Network_auth_logs {
         #Write-Host -ForegroundColor Yellow "Something Went Wrong with the function Get-Network_auth_logs"    
         }
 }
+
 function Get-DefenderLogs {
 
     <#
@@ -363,6 +341,7 @@ function Get-DefenderLogs {
     }
         
 }
+
 function Get-IIS_logs {
 
     <#
@@ -412,6 +391,7 @@ function Get-IIS_logs {
     }
     
 }
+
 function Get-ADS {
 
     <#
@@ -453,6 +433,7 @@ function Get-ADS {
     $output | Export-Csv -Path "$log_output_path\ADS_ZoneIdentifiers.csv"
         
 }
+
 function Get-downloaded_files {
     <#
     
@@ -487,7 +468,8 @@ function Get-downloaded_files {
 }
 
 function Find-BITS {
-    $bits_logs =  Get-BitsTransfer -AllUsers | Select-Object -Property *
+    $bits_logs = Get-BitsTransfer -AllUsers | Select-Object -Property *
+    $allBITSJobs = @()
 
     foreach ($log in $bits_logs) {
         if ($log.NotifyCmdLine -ne $null){
@@ -500,28 +482,27 @@ function Find-BITS {
             Risk = 'Low'
             Source = 'BITS'
             Technique = "T1197: BITS Jobs"
-            Meta = [PSCustomObject]@{
-                ArtifactDescription = [string]"The 'Background Intelligent Transfer Service' (BITS) is a technology developed by Microsoft in order to manage file uploads and downloads, to and from HTTP servers and SMB shares, in a more controlled and load balanced way. If the user starting the download were to log out the computer, or if a network connection is lost, BITS will resume the download automatically"
-                CreationTime = [string]$log.CreationTime
-                EntryName = [string]$log.DisplayName
-                TransferType = [string]$log.TransferType
-                JobState = [string]$log.JobState
-                User = [string]$log.OwnerAccount
-                HttpMethod = [string]$log.HttpMethod
-                EntryValue = [string]$cmd
-                BytesTotal = [string]$log.BytesTotal
-                BytesTransferred = [string]$log.BytesTransferred
-                ProxyUsage = [string]$log.ProxyUsage
-            }
+            ArtifactDescription = [string]"The 'Background Intelligent Transfer Service' (BITS) is a technology developed by Microsoft in order to manage file uploads and downloads, to and from HTTP servers and SMB shares, in a more controlled and load balanced way. If the user starting the download were to log out the computer, or if a network connection is lost, BITS will resume the download automatically"
+            CreationTime = [string]$log.CreationTime
+            EntryName = [string]$log.DisplayName
+            TransferType = [string]$log.TransferType
+            JobState = [string]$log.JobState
+            User = [string]$log.OwnerAccount
+            HttpMethod = [string]$log.HttpMethod
+            EntryValue = [string]$cmd
+            BytesTotal = [string]$log.BytesTotal
+            BytesTransferred = [string]$log.BytesTransferred
+            ProxyUsage = [string]$log.ProxyUsage
         }
-
-        $fields | ConvertTo-Csv | Out-File -FilePath "$log_output_path\BITS-Background_Intelligent_Transfer_Service.csv"
+        $allBITSJobs += $fields
     }
 
+    $allBITSJobs | ConvertTo-Csv -NoTypeInformation | Out-File -FilePath "$log_output_path\BITS-Background_Intelligent_Transfer_Service.csv"
 }
 
 function Find-ScheduleTask {
-    $ScheduleTask =  Get-ScheduledTask | Select-Object -Property Date, State, TaskName, Author, Description, TaskPath, Triggers -ExpandProperty Actions
+    $ScheduleTask = Get-ScheduledTask | Select-Object -Property Date, State, TaskName, Author, Description, TaskPath, Triggers -ExpandProperty Actions
+    $allTasks = @()
 
     foreach ($task in $ScheduleTask) {
         if ($task.Execute -ne $null){
@@ -534,25 +515,23 @@ function Find-ScheduleTask {
             Risk = 'Low'
             Source = 'Powershell - Get-ScheduledTask'
             Technique = "T1053: Scheduled Task/Job"
-            Meta = [PSCustomObject]@{
-                Date = $task.Date
-                TaskName = $task.TaskName
-                TaskState = $task.State
-                Author = $task.Author
-                Description = [string]$task.Description
-                TaskPath = [string]$task.TaskPath
-                Triggers = [string]$task.Triggers
-                ToExecute = [string]$cmd
-                Arguments = [string]$task.Arguments
-                WorkingDirectory = [string]$task.WorkingDirectory
-            }
+            Date = $task.Date
+            TaskName = $task.TaskName
+            TaskState = $task.State
+            Author = $task.Author
+            Description = [string]$task.Description
+            TaskPath = [string]$task.TaskPath
+            Triggers = [string]$task.Triggers
+            ToExecute = [string]$cmd
+            Arguments = [string]$task.Arguments
+            WorkingDirectory = [string]$task.WorkingDirectory
         }
-
-
-        $fields | ConvertTo-Csv | Out-File -FilePath "$task_output_path\ScheduledTask.csv"
+        $allTasks += $fields
     }
 
+    $allTasks | ConvertTo-Csv -NoTypeInformation | Out-File -FilePath "$log_output_path\ScheduledTask.csv"
 }
+
 function Start-Compressions {
 
     <#
