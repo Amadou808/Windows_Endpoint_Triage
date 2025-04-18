@@ -485,6 +485,7 @@ function Get-downloaded_files {
 
             
 }
+
 function Find-BITS {
     $bits_logs =  Get-BitsTransfer -AllUsers | Select-Object -Property *
 
@@ -500,19 +501,17 @@ function Find-BITS {
             Source = 'BITS'
             Technique = "T1197: BITS Jobs"
             Meta = [PSCustomObject]@{
-                ArtifactDescription = "The 'Background Intelligent Transfer Service' (BITS) is a technology developed by Microsoft in order to manage file uploads and downloads, to and from HTTP servers and SMB shares, in a more controlled and load balanced way. If the user starting the download were to log out the computer, or if a network connection is lost, BITS will resume the download automatically"
-                CreationTime = $log.CreationTime
-                EntryName = $log.DisplayName
-                TransferType = $log.TransferType
-                JobState = $log.JobState
-                User = $log.OwnerAccount
-                HttpMethod = $log.HttpMethod
-                FileList = $log.FileList
-                EntryValue = $cmd
-                BytesTotal = $log.BytesTotal
-                BytesTransferred = $log.BytesTransferred
-                ProxyUsage = $log.ProxyUsage
-
+                ArtifactDescription = [string]"The 'Background Intelligent Transfer Service' (BITS) is a technology developed by Microsoft in order to manage file uploads and downloads, to and from HTTP servers and SMB shares, in a more controlled and load balanced way. If the user starting the download were to log out the computer, or if a network connection is lost, BITS will resume the download automatically"
+                CreationTime = [string]$log.CreationTime
+                EntryName = [string]$log.DisplayName
+                TransferType = [string]$log.TransferType
+                JobState = [string]$log.JobState
+                User = [string]$log.OwnerAccount
+                HttpMethod = [string]$log.HttpMethod
+                EntryValue = [string]$cmd
+                BytesTotal = [string]$log.BytesTotal
+                BytesTransferred = [string]$log.BytesTransferred
+                ProxyUsage = [string]$log.ProxyUsage
             }
         }
 
@@ -520,6 +519,7 @@ function Find-BITS {
     }
 
 }
+
 function Find-ScheduleTask {
     $ScheduleTask =  Get-ScheduledTask | Select-Object -Property Date, State, TaskName, Author, Description, TaskPath, Triggers -ExpandProperty Actions
 
@@ -539,12 +539,12 @@ function Find-ScheduleTask {
                 TaskName = $task.TaskName
                 TaskState = $task.State
                 Author = $task.Author
-                Description = $task.Description
-                TaskPath = $task.TaskPath
-                Triggers = $task.Triggers
-                ToExecute = $cmd
-                Arguments = $task.Arguments
-                WorkingDirectory = $task.WorkingDirectory
+                Description = [string]$task.Description
+                TaskPath = [string]$task.TaskPath
+                Triggers = [string]$task.Triggers
+                ToExecute = [string]$cmd
+                Arguments = [string]$task.Arguments
+                WorkingDirectory = [string]$task.WorkingDirectory
             }
         }
 
