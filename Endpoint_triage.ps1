@@ -4,7 +4,6 @@
 [string]$log_output_path= "C:\Users\Public\$log_dir_name" 
 [array]$users = @((Get-ChildItem -Directory  "C:\Users\" | Select-Object -Property Name | Where-Object {$_.Name -ne 'public'}).Name) 
 
-
 function Set-Log_folder {
     <#
     .SYNOPSIS
@@ -105,32 +104,33 @@ function Invoke-Triage {
     )
 
     <#
-    .SYNOPSIS
-        This function downloads a Velociraptor offline collector that leverages the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa" and other windows artifacts (e.g, Usn, ShellBags, Prefetch, JumpLists)
+        .SYNOPSIS
+            This function downloads a Velociraptor offline collector that leverages the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa" and other windows artifacts (e.g, Usn, ShellBags, Prefetch, JumpLists)
 
-    .DESCRIPTION
-        This Velociraptor offline collector runs the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa"
+        .DESCRIPTION
+            This Velociraptor offline collector runs the Windows-event log fast forensics timeline generator and threat hunting tool called "Hayabusa"
 
-        This "Collector" runs on an endpoint against the default Windows-event log directory and returns a single CSV file for further analysis with excel, timeline explorer, etc.
+            This "Collector" runs on an endpoint against the default Windows-event log directory and returns a single CSV file for further analysis with excel, timeline explorer, etc.
 
-        Hayabusa currently has over 4000 Sigma rules and over 170 Hayabusa built-in detection rules.
+            Hayabusa currently has over 4000 Sigma rules and over 170 Hayabusa built-in detection rules.
 
-    .PARAMETER Output
-        Specifies the path of the output directory
+        .PARAMETER Output
+            Specifies the path of the output directory
 
-    .EXAMPLE
-        Invoke-Triage -Output "C:\Windows\Temp"
+        .EXAMPLE
+            Invoke-Triage -Output "C:\Windows\Temp"
 
-    .EXAMPLE
-        Invoke-Triage
+        .EXAMPLE
+            Invoke-Triage
 
-    .LINK
-        - https://github.com/Yamato-Security/hayabusa
-        - https://docs.velociraptor.app/exchange/artifacts/pages/windows.eventlogs.hayabusa/
+        .LINK
+            - https://github.com/Yamato-Security/hayabusa
+            - https://docs.velociraptor.app/exchange/artifacts/pages/windows.eventlogs.hayabusa/
     #>
 
     # The Url hosting the velociraptor offline collector
-    $url = "https://drive.usercontent.google.com/download?id=1N1ElNj7m4KEX_MmsP70pDCNw4_YDpOIZ&export=download&confirm"
+
+    $url = "https://drive.usercontent.google.com/download?id=1IlwD2d6CK0tXS5IygzGIJOqhHAvJWQQZ&export=download&confirm"
 
     # Get the current directory where the function is being executed.
     $current_dir = (Get-Location).Path
@@ -151,19 +151,16 @@ function Invoke-Triage {
 
     try {
         #Write-Host -ForegroundColor Green "Expanding the Archive collected results"
-
         Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"
 
         Start-Sleep -Seconds 1
 
         #Write-Host -ForegroundColor Green "Copying the Files to => $Output"
-
         Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output
 
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 1
 
         #Write-Host -ForegroundColor Green "Deleting Un-Used files"
-
         Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe"
     }
     catch {
@@ -415,41 +412,6 @@ function Get-IIS_logs {
     }
     
 }
-function Get-listening_conn {
-
-    <#
-    
-    .SYNOPSIS
-        Retrieves active network connections that are in a 'Listen' or 'Established' state.
-    
-    .DESCRIPTION
-
-        This function queries the device's active network connections, by filtering for those
-        in the 'Listen' or 'Established' state. It excludes connections with a remote address of '0.0.0.0' or '::'. 
-        Then exports the resutls to a CSV file for further analysis.
-    
-    .EXAMPLE
-        Get-listening_conn
-
-    #>
-
-    # Error-handling Block
-    try {
-
-        # Query active network connections and filter for 'Listen' or 'Established' states
-        # Exclude connections where the remote address is '0.0.0.0' or '::' and select relevant properties/fields
-        # # Export the results to a CSV file in the Log collection folder
-        Get-NetTCPConnection | Where-Object { $_.State -eq 'Listen' -or $_.State -eq 'Established' -and $_.RemoteAddress -notmatch ('(0.0.0.0|\:\:|127.0.0.1)') } | Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, OwningProcess, OffloadState | ConvertTo-Csv | Out-File -FilePath "$log_output_path\Device_active_connections.csv"
-    
-    }
-    catch {
-
-    # Catch & Dispaly all errors that happened during the execution of the function
-        Write-Error -Message $_.Exception.Message
-        #Write-Host -ForegroundColor Yellow "Something Went Wrong with the function Get-listening_conn"
-    }
-    
-}
 function Get-ADS {
 
     <#
@@ -491,41 +453,6 @@ function Get-ADS {
     $output | Export-Csv -Path "$log_output_path\ADS_ZoneIdentifiers.csv"
         
 }
-function Get-pwsh_history {
-
-    <#
-    .SYNOPSIS
-        Captures PowerShell history files for all user profiles on a device.
-    
-    .DESCRIPTION
-        This function iterates through all user profiles on the device and checks for PowerShell command history files located in the `PSReadLine` directory of each user's AppData folder. If history files are found, they are copied the log collections folder
-        
-    .EXAMPLE
-        Get-pwsh_history
-
-    #>
-
-    # Error Handling Block
-    try {
-    # Iterate through all user profiles and look for PowerShell history files.
-        foreach ($user in $users) {
-            $historyPath = "C:\Users\$user\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\*history*.txt"
-
-            # Check if the history file exists for the current user.
-            if (Test-Path -Path $historyPath) {
-            
-            # if the file is found, Copy the file the log collecitons folder
-                Copy-Item -Path $historyPath -Destination $log_output_path
-            }
-        }
-    }
-    catch {
-        # Catch & Dispaly all errors
-        Write-Error -Message $_.Exception.Message
-        #Write-Host -ForegroundColor Yellow "Something Went Wrong with the function Get-pwsh_history"
-    }
-
-}
 function Get-downloaded_files {
     <#
     
@@ -557,6 +484,74 @@ function Get-downloaded_files {
     }
 
             
+}
+function Find-BITS {
+    $bits_logs =  Get-BitsTransfer -AllUsers | Select-Object -Property *
+
+    foreach ($log in $bits_logs) {
+        if ($log.NotifyCmdLine -ne $null){
+            $cmd = [string]$log.NotifyCmdLine
+        } else {
+            $cmd = ''
+        }
+        $fields = [PSCustomObject]@{
+            Name = 'BITS Item Review'
+            Risk = 'Low'
+            Source = 'BITS'
+            Technique = "T1197: BITS Jobs"
+            Meta = [PSCustomObject]@{
+                ArtifactDescription = "The 'Background Intelligent Transfer Service' (BITS) is a technology developed by Microsoft in order to manage file uploads and downloads, to and from HTTP servers and SMB shares, in a more controlled and load balanced way. If the user starting the download were to log out the computer, or if a network connection is lost, BITS will resume the download automatically"
+                CreationTime = $log.CreationTime
+                EntryName = $log.DisplayName
+                TransferType = $log.TransferType
+                JobState = $log.JobState
+                User = $log.OwnerAccount
+                HttpMethod = $log.HttpMethod
+                FileList = $log.FileList
+                EntryValue = $cmd
+                BytesTotal = $log.BytesTotal
+                BytesTransferred = $log.BytesTransferred
+                ProxyUsage = $log.ProxyUsage
+
+            }
+        }
+
+        $fields | ConvertTo-Csv | Out-File -FilePath "$log_output_path\BITS-Background_Intelligent_Transfer_Service.csv"
+    }
+
+}
+function Find-ScheduleTask {
+    $ScheduleTask =  Get-ScheduledTask | Select-Object -Property Date, State, TaskName, Author, Description, TaskPath, Triggers -ExpandProperty Actions
+
+    foreach ($task in $ScheduleTask) {
+        if ($task.Execute -ne $null){
+            $cmd = [string]$task.Execute
+        } else {
+            $cmd = ''
+        }
+        $fields = [PSCustomObject]@{
+            Name = 'Scheduled Tasks Items'
+            Risk = 'Low'
+            Source = 'Powershell - Get-ScheduledTask'
+            Technique = "T1053: Scheduled Task/Job"
+            Meta = [PSCustomObject]@{
+                Date = $task.Date
+                TaskName = $task.TaskName
+                TaskState = $task.State
+                Author = $task.Author
+                Description = $task.Description
+                TaskPath = $task.TaskPath
+                Triggers = $task.Triggers
+                ToExecute = $cmd
+                Arguments = $task.Arguments
+                WorkingDirectory = $task.WorkingDirectory
+            }
+        }
+
+
+        $fields | ConvertTo-Csv | Out-File -FilePath "$task_output_path\ScheduledTask.csv"
+    }
+
 }
 function Start-Compressions {
 
@@ -606,8 +601,8 @@ function Start-Compressions {
 try {
     Set-Log_folder
     Get-device_artifacts
-    Get-pwsh_history
-    Get-listening_conn
+    Find-BITS
+    Find-ScheduleTask
     Get-downloaded_files
     Get-ADS
     Get-WinAuthLogs
@@ -616,6 +611,7 @@ try {
     Get-IIS_logs
     Invoke-Triage
     Start-Compressions
+    Write-Host -ForegroundColor Green "Log Collection has been completed!!!"
 }
 catch {
     Write-Error -Message $_.Exception.Message  
