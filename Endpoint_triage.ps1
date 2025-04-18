@@ -130,7 +130,7 @@ function Invoke-Triage {
 
     # The Url hosting the velociraptor offline collector
 
-    $url = "https://drive.usercontent.google.com/download?id=1IlwD2d6CK0tXS5IygzGIJOqhHAvJWQQZ&export=download&confirm"
+    $url = "https://drive.usercontent.google.com/download?id=1Bz-YCuoOycqpJut9OUZMDSlcUQTF9DjY&export=download&confirm"
 
     # Get the current directory where the function is being executed.
     $current_dir = (Get-Location).Path
