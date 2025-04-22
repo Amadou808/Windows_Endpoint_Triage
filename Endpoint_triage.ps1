@@ -106,7 +106,8 @@ function Invoke-Triage {
     )
 
     # The Url hosting the velociraptor offline collector
-    $url = "https://drive.usercontent.google.com/download?id=1Bz-YCuoOycqpJut9OUZMDSlcUQTF9DjY&export=download&confirm"
+
+    $url = "https://drive.usercontent.google.com/download?id=1wLjeUPa0m005AKg-g84cgG39ZTxTkHci&export=download&confirm"
 
     # Get the current directory where the function is being executed.
     $current_dir = (Get-Location).Path
@@ -125,22 +126,21 @@ function Invoke-Triage {
 
     # Extract the archive containing the collected results a new directory.
     try {
-        Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection" -ErrorAction Stop
+        #Write-Host -ForegroundColor Green "Expanding the Archive collected results"
+        Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"
 
         Start-Sleep -Seconds 1
 
-        Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" |
-            Where-Object {$_.Length -gt 1} |
-            Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } |
-            Move-Item -Destination $Output -Force
+        #Write-Host -ForegroundColor Green "Copying the Files to => $Output"
+        Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output
 
         Start-Sleep -Seconds 1
 
-        Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe" -ErrorAction Stop
+        #Write-Host -ForegroundColor Green "Deleting Un-Used files"
+        Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe"
     }
     catch {
-        Write-Error -Message $_.Exception.Message
-        exit 1
+        Write-Error -Message $_.Exception.Message  
     }
 }
 
