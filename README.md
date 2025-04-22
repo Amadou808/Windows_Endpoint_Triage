@@ -32,17 +32,14 @@ These rules analyze logs from `C:\Windows\System32\winevt\Logs` and produce CSV 
   2. **User Folder Interaction History (Shellbags)**: Records user interactions with folders, useful for tracking user activity.
   3. **User Account Information (SAM)**: Contains user account details and password hashes.
   4. **CertUtil Usage**: Can be used to download files or encode/decode data, often seen in malicious activities.
-  5. **Jump Lists & LNK Files**: Track recently accessed files and applications.
-  6. **Alternate Data Streams (ADS)**: Hidden data streams within files, often used by malware.
-  7. **PowerShell Persistence Mechanisms**: Methods used to maintain persistence via PowerShell profiles and registry entries.
-  8. **Event Log Analysis (Hayabusa)**: Analyzes Windows event logs for suspicious activities.
-  9. **Browser History and Extensions**: Tracks user browsing activity and installed extensions.
-  10. **IIS Logs**: Logs from Internet Information Services, useful for web server activity analysis.
-  11. **Evidence of Execution and Download**: Tracks execution and download activities.
-  12. **Binary Rename & Forwarded Imports**: Techniques used to evade detection.
-  13. **Lateral Movement Indicators**: Signs of lateral movement within a network.
-  14. **Startup Items**: Applications set to Registry Run Keys  & StartUP Folder Directories
-  15. **Permanent WMI Events**: WMI-based persistence mechanisms.
+  5. **PowerShell Persistence Mechanisms**: Methods used to maintain persistence via PowerShell profiles and registry entries.
+  6. **Event Log Analysis (Hayabusa Last 30 days)**: Analyzes Windows event logs for suspicious activities in the last 30 days.
+  7. **Browser History and Extensions**: Tracks user browsing activity and installed extensions.
+  8. **IIS Logs**: Logs from Internet Information Services, useful for web server activity analysis.
+  9. **Binary Rename & Forwarded Imports**: Techniques used to evade detection.
+  10. **Lateral Movement Indicators**: Signs of lateral movement within a network.
+  11. **Startup Items**: Applications set to Registry Run Keys  & StartUP Folder Directories
+  12. **Permanent WMI Events**: WMI-based persistence mechanisms.
 
 #### **Additional Data**:
   - **PowerShell History**: Commands executed in PowerShell.
