@@ -114,30 +114,15 @@ function Invoke-Triage {
 
     # Download the Velociraptor binary to the current directory.
     try {
-        Invoke-WebRequest -OutFile "$current_dir\Velo-Custom-Windows-Collector.exe" -Uri $url -ErrorAction Stop
+        Invoke-WebRequest -OutFile "$current_dir\Velo-Cus-Windows-Collector.exe" -Uri $url -ErrorAction Stop
     }
     catch {
         Write-Error -Message $_.Exception.Message
         exit 1
     }
 
-    # Run the Velociraptor binary with administrator privileges in a hidden window and wait for it to complete.
-    Start-Process -FilePath "$current_dir\Velo-Custom-Windows-Collector.exe" -Verb runas -WindowStyle Hidden -Wait
-
-    # Extract the archive containing the collected results a new directory.
     try {
-        #Write-Host -ForegroundColor Green "Expanding the Archive collected results"
-        Expand-Archive -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"
-
-        Start-Sleep -Seconds 1
-
-        #Write-Host -ForegroundColor Green "Copying the Files to => $Output"
-        Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output
-
-        Start-Sleep -Seconds 1
-
-        #Write-Host -ForegroundColor Green "Deleting Un-Used files"
-        Remove-Item -Recurse -Force -Path "$current_dir\Velo-Custom-Windows-Collection-*.zip", "$current_dir\Velo-Custom-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Custom-Windows-Collector.exe"
+        Start-Process -FilePath "$current_dir\Velo-Cus-Windows-Collector.exe" -Verb runas -WindowStyle Hidden -Wait;Expand-Archive -Path "$current_dir\Velo-Cus-Windows-*.zip" -Destination "$current_dir\$device_name-Host-Triage_Collection"; Get-ChildItem -Path "$current_dir\$device_name-Host-Triage_Collection\results" -Filter "*.csv" | Where-Object {$_.Length -gt 1} | Where-Object {$_.Name -ne "Windows.EventLogs.Hayabusa.Updated%2FUpload.csv" } | Move-Item -Destination $Output; Remove-Item -Recurse -Force -Path "$current_dir\Velo-Cus-Windows-*.zip", "$current_dir\Velo-Cus-Windows-Collector.exe.log", "$current_dir\$device_name-Host-Triage_Collection", "$current_dir\Velo-Cus-Windows-Collector.exe"
     }
     catch {
         Write-Error -Message $_.Exception.Message  
